@@ -1,4 +1,4 @@
-FROM node:19
+FROM stackupiss/northwind-app:v1
 
 ## Building the application
 # create a directory /app and cd into it
