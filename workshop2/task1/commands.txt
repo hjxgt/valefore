@@ -1,2 +1,9 @@
-kubectl create ns task1-dbns
+kubectl create ns bggns
 kubectl apply -f db.yaml
+
+kubectl get all -nbggns
+k get secret,cm -nbggns
+k describe -nbggns secret bgg-secret
+echo -n changeit | base64
+
+k get ep -nbggns

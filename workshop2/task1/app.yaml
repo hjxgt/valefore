@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task1-app-deploy
+  labels:
+    name: task1-app-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: task1-app-pod
+  template:
+    metadata:
+      name: task1-app-pod
+      labels:
+        name: task1-app-pod
+    spec:
+      containers:
+      - name: task1-app-container
+        image: stackupiss/bgg-backend:v1
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: bgg-cm
+        - secretRef:
+            name: bgg-secret
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000 
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+        ports:
+        - containerPort: 3000
