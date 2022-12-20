@@ -1,42 +1,24 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: task1-db-deploy
   labels:
     name: task1-db-deploy
-    namespace: task1-dbns
 spec:
+  replicas: 1
   selector:
     matchLabels:
-      app: task1-db-pod
+      name: task1-db-po
   template:
     metadata:
-      name: task1-db-pod
+      name: task1-db-po
       labels:
-        app: task1-db-pod
+        name: task1-db-po
     spec:
       containers:
       - name: task1-db-container
         image: stackupiss/bgg-database:v1
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3306
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: task1-db-svc
-  labels:
-    name: task1-db-svc
-  namespace: task1-dbns
-spec:
-  type: ClusterIP
-  selector:
-    name: task1-db-pod
-  ports:
-  - port: 3000
-    targetPort: 3306
-
