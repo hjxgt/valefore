@@ -6,7 +6,7 @@ metadata:
   labels:
     name: bggapp-svc
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     name: task1-app-pod
   ports:
