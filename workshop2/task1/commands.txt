@@ -1,0 +1,2 @@
+kubectl create ns task1-dbns
+kubectl apply -f db.yaml
