@@ -51,5 +51,20 @@ spec:
           volumeMounts:
             - name: ws3-vol
               mountPath: /config/workspace
-
-      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ws3-cs-svc
+  labels:
+    name: ws3-cs-svc
+    app: codeserver
+  namespace: ws3
+spec:
+  type: ClusterIP
+  selector:
+    name: ws3-cs-pod
+    app: codeserver
+  ports:
+  - port: 8443
+    targetPort: 8443
