@@ -6,6 +6,11 @@ metadata:
     name: task1-app-deploy
 spec:
   replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       name: task1-app-pod
@@ -65,3 +70,26 @@ spec:
   ports:
   - port: 3000
     targetPort: 3000
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ing
+  labels:
+    name: app-ing
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: app-146.190.202.84.nip.io
+    http: 
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: bggapp-svc
+            port:
+              number: 3000
+
+

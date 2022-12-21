@@ -10,4 +10,19 @@ data:
 
   readme.txt: |
     this is a readme file
-  
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bgg-cm
+data:
+  BGG_DB_USER: root
+  BGG_DB_HOST: task1-db-svc.bggns.svc.cluster.local
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bgg-secret
+type: Opaque
+data:
+  BGG_DB_PASSWORD: Y2hhbmdlaXQ=
