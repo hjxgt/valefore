@@ -1,0 +1,54 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ws3-pvc
+  labels:
+    name: wc3-pvc
+  namespace: ws3
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests: 
+      storage: 1Gi
+  storageClassName: do-block-storage-xfs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ws3-cs-deploy
+  labels:
+    name: ws3-cs-deploy
+    app: codeserver
+  namespace: ws3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: codeserver
+      name: ws3-cs-pod
+  template:
+    name: ws3-cs-pod
+    labels:
+      name: ws3-cs-pod
+      app: codeserver
+    spec:
+      volumes:
+      - name: ws3-vol
+        persistentVolumeClaim:
+          claimName: ws3-pvc
+      containers:
+      - name: ws3-cs-container
+        image: linuxserver/code-server:4.9.1
+        imagePullPolicy: IfNotPresent
+        envFrom:
+          - configMapRef:
+              name: ws3-cm
+        ports:
+        - containerPort: 8443
+        volumeMounts:
+        - name: ws3-vol
+          mountPath: /config/workspace
+
+      
