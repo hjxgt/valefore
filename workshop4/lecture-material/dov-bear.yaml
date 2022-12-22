@@ -18,31 +18,31 @@ spec:
         name: dovbear-pod
     spec:
       containers:
-      - name: dovbear-container
-        image: chukmunnlee/dov-bear-golang:0.1
-        resources:
-          requests:
-            cpu: 100m
-            memory: 16M
-          limits:
-            memory: 16M
-        imagePullPolicy: IfNotPresent
-        env:
-          - name: INSTANCE_NAME
-            value: dovbear1
-          - name: INSTANCE_HASH
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
-          - name: PORT
-            value: '3000'
-        ports:
-          - containerPort: 3000
-            protocol: TCP
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 3000 
+        - name: dovbear-container
+          image: chukmunnlee/dov-bear-golang:0.1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 16M
+            limits:
+              memory: 16M
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: INSTANCE_NAME
+              value: dovbear1
+            - name: INSTANCE_HASH
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: PORT
+              value: "3000"
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
 ---
 apiVersion: v1
 kind: Service
@@ -56,23 +56,23 @@ spec:
   selector:
     name: dovbear-pod
   ports:
-  - port: 3000
-    targetPort: 3000
+    - port: 3000
+      targetPort: 3000
 ---
-apiVersion: v1 
-kind: Service 
-metadata: 
-  name: dov-bear-hsvc 
+apiVersion: v1
+kind: Service
+metadata:
+  name: dov-bear-hsvc
   labels:
-    name: dov-bear-hsvc 
+    name: dov-bear-hsvc
   namespace: myns
 spec:
   clusterIP: None
-  selector: 
+  selector:
     name: dovbear-pod
-  ports: 
-  - port: 3000 
-    targetPort: 3000
+  ports:
+    - port: 3000
+      targetPort: 3000
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -81,7 +81,7 @@ metadata:
   labels:
     name: dovbear-hpa
   namespace: myns
-spec: 
+spec:
   minReplicas: 1
   maxReplicas: 4
   scaleTargetRef:
@@ -89,10 +89,23 @@ spec:
     kind: Deployment
     name: dovbear-deploy
   metrics:
-  - type: Resource
-    resource:
-      name: memory
-      target: 
-        type: Utilization
-        averageUtilization: 30
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 30
 
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+  namespace: myns
+spec:
+  policyTypes:
+    - Ingress
+    - Egress
+  podSelector:
+    matchLabels:
+      deny-all: "true"
