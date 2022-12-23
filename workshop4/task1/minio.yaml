@@ -17,7 +17,11 @@ spec:
   selector:
     name: min-pod
   ports:
-    - port: 9090
+    - name: minio-data
+      port: 9000
+      targetPort: 9000
+    - name: minio-console
+      port: 9090
       targetPort: 9090
 ---
 apiVersion: apps/v1
@@ -38,9 +42,11 @@ spec:
       kind: PersistentVolumeClaim
       metadata:
         name: data-vol
+        labels:
+          name: data-vol
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: do-block-storage
+        storageClassName: do-block-storage-xfs
         resources:
           requests:
             storage: 1Gi
@@ -64,17 +70,17 @@ spec:
         - name: min-container
           image: bitnami/minio
           imagePullPolicy: IfNotPresent
+          command:
+            - minio
+            - server
+            - --address=:9000
+            - --console-address=:9090
+            - http://min-sts-{0...3}.min-hsvc.minns.svc.cluster.local/data
           env:
             - name: MINIO_ROOT_USER
               value: rootroot
             - name: MINIO_ROOT_PASSWORD
               value: Y2hhbmdlaXRvbWc=
-            - name: MY_POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: MINIO_SERVER_URL
-              value: ${MY_POD_NAME}.min-hsvc.minns.svc.cluster.local
           ports:
             - name: http
               containerPort: 9000
@@ -110,8 +116,12 @@ spec:
   selector:
     name: min-pod
   ports:
-    - port: 9000
+    - name: data
+      port: 9000
       targetPort: 9000
+    - name: console
+      port: 9090
+      targetPort: 9090
 
 ---
 apiVersion: networking.k8s.io/v1
@@ -120,10 +130,11 @@ metadata:
   name: min-ing
   labels:
     name: min-ing
+  namespace: minns
 spec:
   ingressClassName: nginx
   rules:
-    - host: min-146.190.202.84.nip.io
+    - host: data-146.190.202.84.nip.io
       http:
         paths:
           - path: /
@@ -132,4 +143,14 @@ spec:
               service:
                 name: min-svc
                 port:
-                  number: 9000
+                  name: data
+    - host: console-146.190.202.84.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: min-svc
+                port:
+                  name: console
